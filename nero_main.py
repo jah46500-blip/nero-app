@@ -3,83 +3,112 @@ import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 from datetime import datetime
-import time 
+import time
 
-st.set_page_config(page_title="NERO Energy", page_icon="⚡", layout="centered")
+# --- CONFIGURATION AVANCÉE ---
+st.set_page_config(page_title="NERO OS - Advanced", page_icon="⚡", layout="centered")
 
-# --- LA LIGNE CORRIGÉE EST ICI ---
+# --- CUSTOM CSS (DARK MODE PREMIUM) ---
 st.markdown("""
     <style>
-    .main { background-color: #f5f7f9; }
-    .stMetric { background-color: #ffffff; padding: 15px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .stApp { background-color: #0E1117; color: #FAFAFA; }
+    .stMetric { background-color: #1E2127; padding: 15px; border-radius: 8px; border: 1px solid #333; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+    div[data-testid="stTabs"] button { font-weight: bold; font-size: 16px; }
     </style>
-    """, unsafe_allow_html=True) 
+    """, unsafe_allow_html=True)
 
+# --- MÉMOIRE DE L'IA (ÉTAT DE SESSION) ---
 if 'total_gain' not in st.session_state:
     st.session_state.total_gain = 20.80
+if 'history' not in st.session_state:
+    st.session_state.history = [] # Pour stocker la liste des ventes
 
-st.title("⚡ NERO Intelligence")
-st.write(f"📅 **{datetime.now().strftime('%d %B %Y')}** | Quartier : *Eco-Lilas*")
+# --- HEADER NERO OS ---
+st.title("⚡ NERO OS | Edge Grid")
+st.caption(f"📍 Node Actif : Quartier Eco-Lilas | Moteur DRL v2.1 | Brevet PCT/FR2026/0001")
 
-mode = st.select_slider(
-    "Mode de gestion IA",
-    options=["💰 Cash-Out", "🌿 Éco-Pilote", "🛡️ Sérénité"],
-    value="🌿 Éco-Pilote"
-)
+# --- CRÉATION DES ONGLETS DE NAVIGATION ---
+tab1, tab2, tab3 = st.tabs(["📊 Dashboard", "🤝 Marché P2P", "⚙️ NERO Box"])
 
-st.divider()
+# ==========================================
+# ONGLET 1 : LE TABLEAU DE BORD PRINCIPAL
+# ==========================================
+with tab1:
+    st.markdown("### Bilan Énergétique Temps Réel")
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Prod. Solaire", "5.1 kW", "+12%")
+    c2.metric("Conso. Foyer", "1.1 kW", "-5%")
+    c3.metric("Stockage VE", "72%", "38 kWh")
 
-col1, col2 = st.columns(2)
-with col1:
-    st.metric("Production Solaire", "5.10 kW", "+12% ☀️")
-    st.metric("Gains NERO (Mois)", f"{st.session_state.total_gain:.2f} €", "+8.20 €")
-with col2:
-    st.metric("Conso. Maison", "1.16 kW", "-5% ✅")
-    st.metric("Autonomie", "94%", "Optimale")
-
-st.write("### 🔋 État du Stockage (Maison + VE)")
-bat_val = st.progress(72)
-st.caption("72% - 38 kWh disponibles (Capacité totale 52 kWh)")
-
-st.write("### 🧠 Prévisions IA (24h)")
-x = np.arange(24)
-prices = [0.15, 0.15, 0.15, 0.15, 0.15, 0.22, 0.28, 0.28, 0.20, 0.15, 0.15, 0.15, 0.12, 0.12, 0.12, 0.15, 0.18, 0.25, 0.30, 0.30, 0.25, 0.20, 0.15, 0.15]
-solar = [0, 0, 0, 0, 0, 1, 3, 6, 8, 9, 10, 9, 8, 6, 4, 2, 0.5, 0, 0, 0, 0, 0, 0, 0]
-
-fig = go.Figure()
-
-fig.add_trace(
-    go.Scatter(x=x, y=prices, name="Prix Réseau (€)", line=dict(color='firebrick', width=2, dash='dot'))
-)
-
-fig.add_trace(
-    go.Bar(x=x, y=solar, name="Prod. Solaire (kW)", marker_color='orange', opacity=0.6)
-)
-
-fig.update_layout(height=300, margin=dict(l=0, r=0, t=20, b=0), legend=dict(orientation="h", yanchor="bottom", y=1.02))
-st.plotly_chart(fig, use_container_width=True)
-
-st.write("### 🤝 Marché Local (P2P)")
-if st.button("🚀 Simuler une vente au voisin"):
-    with st.status("Négociation Smart Grid en cours...", expanded=True) as status:
-        st.write("🔍 Scan des besoins du quartier...")
-        time.sleep(1.5) 
-        st.write("🤝 Voisin #42 détecté (Besoin : 2.5kWh pour VE)")
-        st.write("💰 Prix négocié : 0.18€/kWh (vs 0.10€ rachat réseau)")
-        
-        gain_transaction = 2.5 * 0.18
-        st.session_state.total_gain += gain_transaction
-        
-        status.update(label=f"Vente terminée ! Gain : +{gain_transaction:.2f}€", state="complete", expanded=False)
+    st.markdown("### 🧠 Modélisation des Flux (24h)")
+    # Graphique avancé en aires croisées
+    x = [f"{i}h" for i in range(24)]
+    solar = [0,0,0,0,0,0, 1,4,7,9,10,10,9,7,4,1, 0,0,0,0,0,0,0,0]
+    conso = [1,1,1,1,1,2, 3,2,1,1,1, 1, 1,1,2,4, 5,6,4,2,1,1,1,1]
     
-    st.balloons()
-    st.success(f"📈 Transaction réussie ! Le profit mensuel est passé à {st.session_state.total_gain:.2f} €")
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=x, y=solar, fill='tozeroy', name="Solaire Produit", line=dict(color='#F5B041', width=3)))
+    fig.add_trace(go.Scatter(x=x, y=conso, fill='tozeroy', name="Consommation", line=dict(color='#E74C3C', width=3)))
+    
+    fig.update_layout(
+        height=320, margin=dict(l=0,r=0,t=10,b=0),
+        paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+        font=dict(color="#FAFAFA"),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02),
+        xaxis=dict(showgrid=False), yaxis=dict(showgrid=True, gridcolor='#333')
+    )
+    st.plotly_chart(fig, use_container_width=True)
 
-with st.expander("⚠️ Rapports de Résilience (Stress Test)"):
-    st.warning("Simuler un Blackout réseau")
-    if st.button("Activer Mode Îlotage"):
-        st.error("RÉSEAU COUPÉ : NERO maintient l'alimentation via la batterie.")
-        st.info("Priorité : Frigo, Wi-Fi, Alarme. Autonomie restante : 18h20.")
+# ==========================================
+# ONGLET 2 : LE TRADING P2P (LA RENTABILITÉ)
+# ==========================================
+with tab2:
+    st.markdown("### Bourse Énergétique Locale")
+    st.metric("Gains P2P Cumulés", f"{st.session_state.total_gain:.2f} €", "Optimisé par IA")
+    st.divider()
 
-st.divider()
-st.caption("NERO v1.0 - Protégé par Brevet PCT/FR2026/0001")
+    if st.button("⚡ Lancer l'algorithme d'arbitrage P2P", use_container_width=True):
+        with st.spinner("Deep Learning : Recherche du meilleur acheteur local..."):
+            time.sleep(1.5)
+            # Génération d'une vente aléatoire pour plus de réalisme
+            gain = round(np.random.uniform(0.30, 0.80), 2)
+            voisin = np.random.randint(10, 99)
+            volume = round(np.random.uniform(1.0, 3.5), 1)
+            
+            # Mise à jour des données
+            st.session_state.total_gain += gain
+            st.session_state.history.insert(0, {
+                "Heure": datetime.now().strftime("%H:%M:%S"), 
+                "Acheteur": f"Voisin #{voisin}", 
+                "Volume (kWh)": volume, 
+                "Gain (€)": f"+{gain}"
+            })
+            
+        st.success(f"Contrat intelligent exécuté ! +{gain}€ ajoutés.")
+        st.balloons()
+
+    # Affichage de l'historique si des ventes ont été faites
+    if st.session_state.history:
+        st.markdown("📜 **Historique (Blockchain Locale) :**")
+        st.dataframe(pd.DataFrame(st.session_state.history), use_container_width=True, hide_index=True)
+
+# ==========================================
+# ONGLET 3 : LE HARDWARE (RÉASSURANCE VC)
+# ==========================================
+with tab3:
+    st.markdown("### Télémétrie NERO Box")
+    st.info("🟢 Communication avec le compteur Linky (Port TIC) : STABLE")
+    
+    c1, c2 = st.columns(2)
+    c1.metric("CPU Temp (ESP32)", "42°C", "Normal")
+    c2.metric("Latence Réseau", "12 ms", "Excellent")
+
+    st.divider()
+    st.warning("⚠️ Simulation de Crise Majeure")
+    st.write("Démontrez la capacité de résilience du système aux investisseurs.")
+    
+    if st.button("🚨 Simuler Coupure Réseau National", type="primary", use_container_width=True):
+        st.error("BLACKOUT DÉTECTÉ : Le réseau ENEDIS est tombé à 0V.")
+        time.sleep(1)
+        st.success("MODE ÎLOTAGE ACTIVÉ : La NERO Box a déconnecté la maison du réseau.")
+        st.info("🔌 Le foyer est désormais alimenté à 100% par le V2H (Voiture) et le solaire. Autonomie vitale estimée : 48h.")
